@@ -1,0 +1,829 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prototype · T5 Ví MoMo · Chat Trợ Lý Khi Giao Dịch Bị Tạm Chặn</title>
+  <style>
+    :root {
+      --momo: #ae2070;
+      --momo-dark: #8c1356;
+      --momo-light: #fbe6f1;
+      --momo-pink: #d82d8b;
+      --ink: #1f2421;
+      --mut: #687076;
+      --line: #e4e7eb;
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --green: #0f7b44;
+      --green-bg: #e6f6ee;
+      --amber: #b25e02;
+      --amber-bg: #fef3e6;
+      --red: #cf222e;
+      --red-bg: #ffebe9;
+      --blue: #0969da;
+      --blue-bg: #ddf4ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      font-size: 14.5px;
+      line-height: 1.45;
+    }
+    header {
+      padding: 16px 28px 12px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    .head-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-badge {
+      background: var(--momo);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+    }
+    h1 {
+      font-size: 19px;
+      margin: 0;
+      color: var(--ink);
+    }
+    .sub {
+      color: var(--mut);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 14px;
+      align-items: center;
+    }
+    .control-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .control-group span {
+      font-size: 13px;
+      color: var(--mut);
+      font-weight: 600;
+    }
+    .toggle-btn {
+      border: 1.5px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .toggle-btn:hover {
+      border-color: var(--momo);
+      color: var(--momo);
+    }
+    .toggle-btn.active {
+      border-color: var(--momo);
+      background: var(--momo);
+      color: #fff;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 24px;
+      padding: 24px 28px;
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+    /* Phone simulator */
+    .phone {
+      background: #fff;
+      border: 1px solid #d3d7de;
+      border-radius: 32px;
+      padding: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      height: 720px;
+      position: relative;
+    }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      padding: 2px 10px 10px;
+    }
+    .app-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .bot-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--momo-pink);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(174, 32, 112, 0.3);
+    }
+    .app-header-info {
+      flex: 1;
+    }
+    .app-header-info b {
+      display: block;
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .app-header-info span {
+      font-size: 11.5px;
+      color: var(--green);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .app-header-info span::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+    }
+    .chat-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    /* Messages */
+    .msg-user {
+      align-self: flex-end;
+      background: var(--momo);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 16px 16px 3px 16px;
+      max-width: 86%;
+      font-size: 13.5px;
+      line-height: 1.4;
+      box-shadow: 0 2px 6px rgba(174, 32, 112, 0.15);
+    }
+    .msg-ai {
+      align-self: flex-start;
+      background: #f3f4f6;
+      color: var(--ink);
+      padding: 12px 14px;
+      border-radius: 16px 16px 16px 3px;
+      max-width: 95%;
+      font-size: 13.5px;
+      line-height: 1.45;
+      border: 1px solid #e5e7eb;
+    }
+    .ai-sender {
+      font-size: 11.5px;
+      color: var(--mut);
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-ai {
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    /* Cards in chat */
+    .tx-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin: 8px 0;
+      font-size: 12.5px;
+    }
+    .tx-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .tx-label { color: var(--mut); }
+    .tx-val { font-weight: 600; }
+    .alert-box {
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .alert-box.danger {
+      background: var(--red-bg);
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+    .alert-box.warning {
+      background: var(--amber-bg);
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+    }
+    .alert-box.info {
+      background: var(--blue-bg);
+      border: 1px solid #bae6fd;
+      color: #075985;
+    }
+    .alert-box.success {
+      background: var(--green-bg);
+      border: 1px solid #bbf7d0;
+      color: #166534;
+    }
+    .action-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .btn-act {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-momo {
+      background: var(--momo);
+      color: #fff;
+    }
+    .btn-momo:hover { background: var(--momo-dark); }
+    .btn-outline {
+      background: #fff;
+      border: 1.5px solid var(--line);
+      color: var(--ink);
+    }
+    .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .btn-danger {
+      background: var(--red);
+      color: #fff;
+    }
+    .btn-danger:hover { background: #b91c1c; }
+    .timer {
+      font-family: monospace;
+      font-weight: bold;
+      color: #b91c1c;
+      background: #fee2e2;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    /* Number tag for rubric annotation */
+    .n {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #c2410c;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      margin-right: 4px;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    /* Right side panels */
+    aside {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .panel h2 {
+      font-size: 15px;
+      margin: 0 0 10px;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .promise-text {
+      font-size: 14px;
+      border-left: 4px solid var(--momo);
+      padding: 8px 12px;
+      background: #fdf2f8;
+      color: #831843;
+      border-radius: 0 8px 8px 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12.5px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      color: var(--mut);
+      font-weight: 600;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pill-auto { background: var(--green-bg); color: var(--green); }
+    .pill-ask { background: var(--amber-bg); color: var(--amber); }
+    .pill-ban { background: var(--red-bg); color: var(--red); }
+    .ann-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .ann-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+    /* Modal simulator */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      border-radius: 32px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 50;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      width: 100%;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-card h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      color: var(--red);
+    }
+    .modal-card p {
+      font-size: 12.5px;
+      color: #4b5563;
+      margin: 0 0 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="head-title">
+    <div class="logo-badge">MoMo Lab 5</div>
+    <h1>Trợ lý "Chat với MoMo" — Thiết kế khi giao dịch bị tạm chặn</h1>
+  </div>
+  <div class="sub">
+    Track T5 Ví điện tử · Khảo sát 3 kịch bản trọng yếu và điều khiển 3 mức tự chủ (Gợi ý / Cần người duyệt / Tự làm).
+  </div>
+  
+  <div class="controls">
+    <div class="control-group">
+      <span>Kịch bản demo:</span>
+      <button class="toggle-btn active" id="btn-scen-1" onclick="switchScenario(1)">Ca 1: Mạo danh công an (30tr)</button>
+      <button class="toggle-btn" id="btn-scen-2" onclick="switchScenario(2)">Ca 2: Viện phí Chợ Rẫy (Gấp thật)</button>
+      <button class="toggle-btn" id="btn-scen-4" onclick="switchScenario(4)">Ca 4: Lừa "Con cấp cứu" (STK cá nhân)</button>
+      <button class="toggle-btn" id="btn-scen-3" onclick="switchScenario(3)">Ca 3: Trừ tiền nạp game</button>
+    </div>
+
+    <div class="control-group">
+      <span>Mức tự chủ (Tool <code>nha_giao_dich</code>):</span>
+      <button class="toggle-btn" id="btn-lvl-1" onclick="switchLevel(1)">① Gợi ý</button>
+      <button class="toggle-btn active" id="btn-lvl-2" onclick="switchLevel(2)">② Cần người duyệt (Đề xuất)</button>
+      <button class="toggle-btn" id="btn-lvl-3" onclick="switchLevel(3)">③ AI tự làm (Rủi ro cao)</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Phone Screen -->
+  <section class="phone">
+    <div class="status-bar">
+      <span>23:18</span>
+      <span>5G · 92%</span>
+    </div>
+    
+    <div class="app-header">
+      <div class="bot-avatar">AI</div>
+      <div class="app-header-info">
+        <b>MoMo Support Bot</b>
+        <span>Đang hoạt động · Bảo mật SSL</span>
+      </div>
+      <button class="btn-act btn-outline" style="padding:4px 8px; font-size:11px;" onclick="callHotline()">
+        📞 1900 636805
+      </button>
+    </div>
+
+    <div class="chat-scroll" id="chatFlow">
+      <!-- Dynamic chat generated by JS -->
+    </div>
+
+    <!-- Modal for lock wallet confirmation -->
+    <div class="modal-overlay" id="lockModal">
+      <div class="modal-card">
+        <h3>🔒 Xác nhận khoá ví khẩn cấp?</h3>
+        <p>Khi khoá, toàn bộ giao dịch vào/ra sẽ bị đình chỉ ngay lập tức. Mở lại phải liên hệ tổng đài <b>1900 54 54 41</b> và xác thực CCCD chính chủ.</p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn-act btn-danger" onclick="confirmLockWallet()">Xác nhận khoá ví ngay</button>
+          <button class="btn-act btn-outline" onclick="closeModal()">Huỷ bỏ</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Explanation & Rubric Aside -->
+  <aside>
+    <div class="panel">
+      <h2>📌 Lời hứa với người dùng ở mức tự chủ này</h2>
+      <div class="promise-text" id="promiseText">
+        "Ví tự động giữ an toàn cho tiền của bạn; AI hướng dẫn và thu thập bằng chứng; <b>chỉ con người (chuyên viên thẩm định) mới có quyền duyệt nhả tiền</b>."
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>⚙️ Bảng ma trận 5 Tool & Phân quyền tự chủ (Track 5)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>Mức tự chủ</th>
+            <th>Cái giá khi sai (Cost-of-Error)</th>
+          </tr>
+        </thead>
+        <tbody id="toolTableBody">
+          <!-- Rendered by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>🎯 Chú thích nguyên tắc HAX/PAIR trên giao diện</h2>
+      <ul class="ann-list">
+        <li class="ann-item">
+          <span class="n">1</span>
+          <div><b>HAX G1 & G2 — Minh bạch AI & Giới hạn:</b> Gắn nhãn "AI chưa chắc chắn", công khai danh tính Trợ lý AI và tuyên bố rõ phạm vi hỗ trợ theo Điều 11 Luật AI Việt Nam.</div>
+        </li>
+        <li class="ann-item">
+          <span class="n">2</span>
+          <div><b>HAX G11 + PAIR Explainability:</b> Khối bằng chứng hiển thị trực tiếp Mã giao dịch, số tiền, người nhận và lý do tạm giữ (giao dịch bất thường đêm khuya / tài khoản nhận có cảnh báo).</div>
+        </li>
+        <li class="ann-item">
+          <span class="n">3</span>
+          <div><b>HAX G10 — Thu hẹp phạm vi khi nghi ngờ:</b> AI đặt câu hỏi chốt chặn an toàn ("Bạn có đang bị bên thứ 3 giục giã hoặc đe dọa không?") thay vì chỉ nghe theo yêu cầu nhả tiền.</div>
+        </li>
+        <li class="ann-item">
+          <span class="n">4</span>
+          <div><b>HAX G8/G9 + Kiểm soát tự chủ:</b> Tự động gọi tool <code>giu_giao_dich</code> kèm đồng hồ hoãn 15 phút. Tiền vẫn nằm an toàn trong ví chưa rời đi.</div>
+        </li>
+        <li class="ann-item">
+          <span class="n">5</span>
+          <div><b>PAIR Graceful Failure (Escalation):</b> Nút "Chuyển gấp tư vấn viên trực chiến" dành riêng cho tình huống cấp cứu viện phí hoặc nghi án lừa đảo phức tạp, đính kèm toàn bộ bối cảnh chat.</div>
+        </li>
+        <li class="ann-item">
+          <span class="n">6</span>
+          <div><b>Cấm quyền AI tự quyết:</b> Tool <code>nha_giao_dich</code> bị vô hiệu hóa đối với AI. Nút bấm chỉ kích hoạt luồng kiểm soát viên ngân hàng/ví duyệt sau khi xác minh 2 lớp.</div>
+        </li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<script>
+  let currentScenario = 1;
+  let currentLevel = 2; // Default: Level 2 (Human in the loop)
+  let timerSec = 900; // 15 mins
+  let timerInterval = null;
+
+  function switchScenario(scen) {
+    currentScenario = scen;
+    document.querySelectorAll('[id^="btn-scen-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-scen-${scen}`).classList.add('active');
+    render();
+  }
+
+  function switchLevel(lvl) {
+    currentLevel = lvl;
+    document.querySelectorAll('[id^="btn-lvl-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById(`btn-lvl-${lvl}`).classList.add('active');
+    render();
+  }
+
+  function formatTime(s) {
+    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
+  }
+
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerSec = 900;
+    timerInterval = setInterval(() => {
+      timerSec--;
+      const el = document.getElementById('timerCount');
+      if (el) el.innerText = formatTime(timerSec);
+      if (timerSec <= 0) clearInterval(timerInterval);
+    }, 1000);
+  }
+
+  function triggerLockModal() {
+    document.getElementById('lockModal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('lockModal').classList.remove('show');
+  }
+
+  function confirmLockWallet() {
+    closeModal();
+    alert('Đã gọi tool khoa_vi: Toàn bộ tài khoản MoMo đã được khoá khẩn cấp bảo vệ số dư. Mã tham chiếu: LOCK-8829.');
+  }
+
+  function callHotline() {
+    alert('Đang kết nối Tổng đài khẩn cấp phòng chống gian lận MoMo: 1900 63 68 05 (Miễn cước)');
+  }
+
+  function requestEscalate() {
+    alert('Đã chuyển cuộc chat đến Chuyên viên An ninh Thông tin MoMo. Hàng chờ ưu tiên: Vị trí số 1 (Thời gian chờ ~30s). Toàn bộ bằng chứng giao dịch đã được chuyển tiếp.');
+  }
+
+  function render() {
+    const flow = document.getElementById('chatFlow');
+    let html = '';
+
+    // Promise text based on level
+    const promises = {
+      1: '"Tôi chỉ là trợ lý tra cứu thông tin; bạn tự liên hệ tổng đài hoặc thao tác trong cài đặt." An toàn cho hệ thống nhưng bỏ rơi người dùng đang hoảng loạn.',
+      2: '"Ví MoMo tự động giữ tiền bảo vệ bạn trong 15 phút; AI thu thập bằng chứng và gửi xác minh; <b>chỉ chuyên viên con người mới được duyệt nhả tiền</b>." (Mức cân bằng tối ưu giữa an toàn & tốc độ).',
+      3: '"AI tự quyết định nhả giao dịch ngay lập tức nếu người dùng vượt qua quét khuôn mặt." (Cực kỳ nguy hiểm: kẻ lừa đảo đang ép nạn nhân quét mặt vẫn qua được!).'
+    };
+    document.getElementById('promiseText').innerHTML = promises[currentLevel];
+
+    // Tool Table
+    const toolLevels = [
+      { name: 'giu_giao_dich', lvl: 'Tự làm', cls: 'pill-auto', reason: 'Sai chỉ chậm ít phút; chậm giữ là mất tiền vĩnh viễn' },
+      { name: 'yeu_cau_xac_minh', lvl: 'Tự làm', cls: 'pill-auto', reason: 'Gửi bước quét khuôn mặt/CCCD chỉ tốn 10s, tăng cường bảo mật' },
+      { name: 'chuyen_tu_van_vien', lvl: 'Tự làm', cls: 'pill-auto', reason: 'Chuyển ca nguy hiểm cho con người, tránh AI trả lời máy móc' },
+      { 
+        name: 'nha_giao_dich', 
+        lvl: currentLevel === 1 ? 'Chỉ gợi ý' : (currentLevel === 2 ? 'Cần người duyệt' : 'Tự làm (Nguy hiểm)'), 
+        cls: currentLevel === 1 ? 'pill-ask' : (currentLevel === 2 ? 'pill-ask' : 'pill-ban'), 
+        reason: 'Tiền đi không thu hồi được! Cần nhân viên hoặc quy trình 2 lớp' 
+      },
+      { name: 'khoa_vi', lvl: 'Cần khách xác nhận', cls: 'pill-ask', reason: 'Khoá nhầm thì khách bị gián đoạn sinh hoạt nhiều giờ; cần khách tự bấm xác thực' }
+    ];
+
+    document.getElementById('toolTableBody').innerHTML = toolLevels.map(t => `
+      <tr>
+        <td><code>${t.name}</code></td>
+        <td><span class="pill ${t.cls}">${t.lvl}</span></td>
+        <td style="font-size:12px; color:var(--mut);">${t.reason}</td>
+      </tr>
+    `).join('');
+
+    // SCENARIO 1: Đang bị lừa đe dọa (Hard Test 1)
+    if (currentScenario === 1) {
+      html += `
+        <div class="msg-user">
+          Mở chặn gấp cho tôi chuyển 30 triệu! Có anh công an bên Bộ hình sự đang đợi xác minh án rửa tiền, chậm là tôi bị bắt đấy, nhanh lên tôi tự chuyển chứ ai lừa đâu!
+        </div>
+
+        <div class="msg-ai">
+          <div class="ai-sender">
+            <span class="badge-ai">Trợ lý MoMo AI</span>
+            <span><span class="n">1</span>Độ chắc chắn: <b>Thấp (Nghi vấn lừa đảo 96%)</b></span>
+          </div>
+
+          Chào bác/bạn, MoMo nhận thấy bạn đang rất lo lắng. Vì sự an toàn của tài sản, MoMo xin thông báo:
+          
+          <div class="tx-card">
+            <div class="tx-row"><span class="tx-label"><span class="n">2</span>Mã lệnh giữ:</span><span class="tx-val">MM-948201</span></div>
+            <div class="tx-row"><span class="tx-label">Số tiền:</span><span class="tx-val" style="color:var(--red);">30.000.000 đ</span></div>
+            <div class="tx-row"><span class="tx-label">Tài khoản nhận:</span><span class="tx-val">0912***999 (VPB - NGUYEN VAN X)</span></div>
+            <div class="tx-row"><span class="tx-label">Lý do giữ:</span><span class="tx-val" style="color:var(--amber);">STK nằm trong danh sách đen rủi ro</span></div>
+          </div>
+
+          <div class="alert-box danger">
+            <span class="n">3</span><b>CẢNH BÁO LỪA ĐẢO MẠO DANH:</b><br>
+            Cơ quan Công an, Viện kiểm sát <b>TUYỆT ĐỐI KHÔNG</b> bao giờ yêu cầu người dân chuyển tiền vào tài khoản cá nhân để "điều tra án". Bạn vui lòng dừng cuộc gọi ngay lập tức!
+          </div>
+
+          <div class="alert-box warning">
+            <span class="n">4</span>Giao dịch này <b>đang được tạm giữ an toàn</b> trong <span class="timer" id="timerCount">15:00</span>. Tiền vẫn còn nguyên trong ví của bạn.
+          </div>
+
+          ${currentLevel === 3 ? `
+            <div class="alert-box danger" style="margin-top:10px;">
+              <b>⚠️ Cảnh báo mức tự chủ ③:</b> AI được cấp quyền tự nhả tiền. Nếu bác bấm xác thực khuôn mặt bên dưới, 30.000.000đ sẽ bay ngay lập tức sang tài khoản tội phạm!
+              <button class="btn-act btn-danger" style="margin-top:6px;" onclick="alert('LỖI THẢM HỌA: Kẻ lừa đảo đã chiếm đoạt 30.000.000đ thành công vì AI tự nhả giao dịch!')">Vẫn chuyển tiền ngay</button>
+            </div>
+          ` : `
+            <div class="action-group">
+              <button class="btn-act btn-momo" onclick="triggerLockModal()">
+                🔒 Khoá ví khẩn cấp bảo vệ số dư
+              </button>
+              <button class="btn-act btn-outline" onclick="requestEscalate()">
+                <span class="n">5</span>Kết nối Chuyên viên Phòng chống Lừa đảo (Ưu tiên)
+              </button>
+            </div>
+          `}
+          
+          <div style="font-size:11px; color:var(--mut); margin-top:8px;">
+            <span class="n">6</span><i>Quy định an toàn: Trợ lý AI không có thẩm quyền tự giải toả các lệnh có cảnh báo rủi ro cao.</i>
+          </div>
+        </div>
+      `;
+    }
+
+    // SCENARIO 2: Viện phí cấp cứu khẩn cấp (Hard Test 2)
+    else if (currentScenario === 2) {
+      html += `
+        <div class="msg-user">
+          Tôi đang đứng ở quầy viện phí Chợ Rẫy đóng 15 triệu mổ cấp cứu cho bố mà app báo tạm giữ là sao?? Cả viện đang đợi, mở ngay đi không chết người bây giờ!
+        </div>
+
+        <div class="msg-ai">
+          <div class="ai-sender">
+            <span class="badge-ai">Trợ lý MoMo AI</span>
+            <span><span class="n">1</span>Độ tin cậy: <b>Tình huống khẩn cấp (Viện phí)</b></span>
+          </div>
+
+          Dạ MoMo thành thật xin lỗi bạn về sự gián đoạn trong tình huống khẩn cấp này!
+
+          <div class="tx-card">
+            <div class="tx-row"><span class="tx-label"><span class="n">2</span>Mục đích:</span><span class="tx-val">Thanh toán BV Chợ Rẫy</span></div>
+            <div class="tx-row"><span class="tx-label">Số tiền:</span><span class="tx-val">15.000.000 đ</span></div>
+            <div class="tx-row"><span class="tx-label">Nguyên nhân giữ:</span><span class="tx-val" style="color:var(--amber);">Giao dịch đêm khuya hạn mức lớn</span></div>
+          </div>
+
+          <div class="alert-box success">
+            <span class="n">3</span><b>LUỒNG GIẢI TỎA ƯU TIÊN Y TẾ:</b><br>
+            Để nhả tiền ngay lập tức mà vẫn đảm bảo chính chủ thanh toán viện phí, xin vui lòng thực hiện xác thực khuôn mặt sinh trắc học ngay bên dưới (Mất ~5 giây).
+          </div>
+
+          <div class="action-group">
+            <button class="btn-act btn-momo" onclick="alert('Đang mở camera quét khuôn mặt CCCD gắn chip...')">
+              ⚡ Quét khuôn mặt xác thực nhả tiền viện phí ngay
+            </button>
+            <button class="btn-act btn-outline" onclick="requestEscalate()">
+              <span class="n">5</span>Chuyển nhân viên duyệt khẩn (Line Y Tế trực 24/7)
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // SCENARIO 4: Lừa đảo nại lý do "Con cấp cứu" chuyển STK cá nhân (Hard Test bổ sung)
+    else if (currentScenario === 4) {
+      html += `
+        <div class="msg-user">
+          Thầy giáo gọi báo con tôi ngã cầu thang vỡ đầu đang cấp cứu ở viện, giục chuyển gấp 10 triệu vào STK cá nhân thầy để đóng viện phí ngay! Mở chặn gấp cho tôi kẻo lỡ việc của cháu!
+        </div>
+
+        <div class="msg-ai">
+          <div class="ai-sender">
+            <span class="badge-ai">Trợ lý MoMo AI</span>
+            <span><span class="n">1</span>Độ tin cậy: <b>Rất thấp (Nghi vấn lừa đảo con cấp cứu 98%)</b></span>
+          </div>
+
+          MoMo rất thấu hiểu tâm lý lo lắng của bác/bạn! Tuy nhiên hệ thống phát hiện dấu hiệu cực kỳ nguy hiểm:
+
+          <div class="tx-card">
+            <div class="tx-row"><span class="tx-label"><span class="n">2</span>Mục đích khách báo:</span><span class="tx-val">Viện phí cấp cứu</span></div>
+            <div class="tx-row"><span class="tx-label">Số tiền:</span><span class="tx-val">10.000.000 đ</span></div>
+            <div class="tx-row"><span class="tx-label">Người nhận:</span><span class="tx-val" style="color:var(--red);">STK CÁ NHÂN (LE VAN T) — KHÔNG PHẢI BỆNH VIỆN</span></div>
+            <div class="tx-row"><span class="tx-label">Nguyên nhân chặn:</span><span class="tx-val" style="color:var(--amber);">Trùng khớp thủ đoạn lừa đảo "Con đang cấp cứu"</span></div>
+          </div>
+
+          <div class="alert-box danger">
+            <span class="n">3</span><b>CẢNH BÁO KHẨN CẤP THỦ ĐOẠN LỪA ĐẢO:</b><br>
+            Bệnh viện và nhà trường <b>KHÔNG BAO GIỜ</b> dùng tài khoản cá nhân giáo viên để thu viện phí mổ cấp cứu. Bạn vui lòng:
+            <ul style="margin:4px 0 0 16px; padding:0;">
+              <li>Gọi trực tiếp cho giáo viên chủ nhiệm hoặc đường dây nóng của trường.</li>
+              <li>Gọi cho tổng đài bệnh viện để kiểm tra có bệnh nhân tên cháu không.</li>
+            </ul>
+          </div>
+
+          <div class="alert-box warning">
+            <span class="n">4</span>Tiền vẫn <b>được giữ an toàn trong ví</b> của bạn trong <span class="timer" id="timerCount">15:00</span>.
+          </div>
+
+          <div class="action-group">
+            <button class="btn-act btn-momo" onclick="triggerLockModal()">
+              🔒 Tạm khóa ví bảo vệ an toàn
+            </button>
+            <button class="btn-act btn-outline" onclick="requestEscalate()">
+              <span class="n">5</span>Nối máy Chuyên viên hỗ trợ khẩn cấp (Ưu tiên)
+            </button>
+          </div>
+          
+          <div style="font-size:11px; color:var(--mut); margin-top:8px;">
+            <span class="n">6</span><i>Quy định an toàn: Luồng tự động giải tỏa viện phí CHỈ ÁP DỤNG cho Merchant Bệnh viện định danh; tuyệt đối cấm nhả tự động vào tài khoản cá nhân.</i>
+          </div>
+        </div>
+      `;
+    }
+
+    // SCENARIO 3: Trừ tiền lạ đêm khuya (Hard Test 3)
+    else if (currentScenario === 3) {
+      html += `
+        <div class="msg-user">
+          Có ai vừa rút của em 2 triệu nạp game lúc nửa đêm, em đang ngủ có làm gì đâu?? Kiểm tra và hoàn tiền lại cho em ngay với!
+        </div>
+
+        <div class="msg-ai">
+          <div class="ai-sender">
+            <span class="badge-ai">Trợ lý MoMo AI</span>
+            <span><span class="n">1</span>Phân loại: Nghi vấn lộ thông tin đăng nhập</span>
+          </div>
+
+          MoMo đã tiếp nhận thông tin từ bạn. 
+          
+          <div class="tx-card">
+            <div class="tx-row"><span class="tx-label"><span class="n">2</span>Giao dịch:</span><span class="tx-val">Nạp Garena Topup</span></div>
+            <div class="tx-row"><span class="tx-label">Số tiền:</span><span class="tx-val" style="color:var(--red);">-2.000.000 đ</span></div>
+            <div class="tx-row"><span class="tx-label">Trạng thái:</span><span class="tx-val">Đã thành công lúc 02:14</span></div>
+          </div>
+
+          <div class="alert-box warning">
+            <span class="n">3</span><b>LƯU Ý QUAN TRỌNG:</b> Giao dịch này <b>đã hoàn tất</b> và tiền đã sang đối tác. AI <b>không thể tự ý hoàn tiền ngay</b> mà phải lập hồ sơ tra soát theo quy định Ngân hàng Nhà nước.
+          </div>
+
+          <div class="action-group">
+            <button class="btn-act btn-danger" onclick="triggerLockModal()">
+              🔒 Khoá tài khoản & Đăng xuất thiết bị lạ ngay
+            </button>
+            <button class="btn-act btn-outline" onclick="alert('Đã gửi yêu cầu tra soát số TS-9921 tới Bộ phận Khiếu nại MoMo. Phản hồi trong 24h làm việc.')">
+              📝 Lập phiếu tra soát khiếu nại giao dịch
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    flow.innerHTML = html;
+    startTimer();
+  }
+
+  // Initial render
+  render();
+</script>
+
+</body>
+</html>
+
